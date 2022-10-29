@@ -1,11 +1,13 @@
 class Song
 
+  @@all = []
   attr_accessor :name, :album, :id
 
   def initialize(name:, album:, id: nil)
     @id = id
     @name = name
     @album = album
+    @@all << self
   end
 
   def self.drop_table
@@ -47,6 +49,42 @@ class Song
   def self.create(name:, album:)
     song = Song.new(name: name, album: album)
     song.save
+   
   end
+def self.new_from_db(row)
+    # create a new Student object given a row from the database
+
+    student = self.new
+    student.id = row[0]
+    student.name = row[1]
+    student.grade = row[2]
+    student
+  end
+
+  def self.all
+    # retrieve all the rows from the "Students" database
+    # remember each row should be a new instance of the Student class
+    sql = <<-SQL
+      SELECT * FROM students
+    SQL
+    students_all= DB[:conn].execute(sql) 
+    students_all.map do |so|
+      self.new_from_db(so)
+    end
+  end
+
+  def self.find_by_name(name)
+  
+    sql = <<-SQL
+      SELECT * FROM songs WHERE name = ? LIMIT 1
+    SQL
+
+    song_array = DB[:conn].execute(sql, name)
+    song_object = song_array.map do |so| 
+      self.new_from_db(so)
+    end
+    song_object.first
+  end
+
 
 end
